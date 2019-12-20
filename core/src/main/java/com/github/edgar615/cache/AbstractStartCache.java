@@ -14,10 +14,14 @@
 
 package com.github.edgar615.cache;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,63 +36,111 @@ public abstract class AbstractStartCache<ID, T> implements StartCache<ID, T> {
 
   private final Function<T, ID> idFunction;
 
+  private final ReadWriteLock lock;
+
   protected AbstractStartCache(Function<T, ID> idFunction) {
     Objects.requireNonNull(idFunction);
     this.idFunction = idFunction;
+    this.lock = new ReentrantReadWriteLock();
   }
 
   @Override
-  public synchronized void add(List<T> data) {
+  public final void add(List<T> data) {
     Objects.requireNonNull(data);
-    elements.addAll(data);
+    Lock writeLock = lock.writeLock();
+    try {
+      writeLock.lock();
+      elements.addAll(data);
+    } finally {
+      writeLock.unlock();
+    }
   }
 
   @Override
-  public synchronized void add(T data) {
+  public final void add(T data) {
     Objects.requireNonNull(data);
-    elements.add(data);
+    add(Lists.newArrayList(data));
   }
 
   @Override
-  public synchronized void update(List<T> data) {
-    delete(data);
-    add(data);
+  public final void update(List<T> data) {
+    Objects.requireNonNull(data);
+    Lock writeLock = lock.writeLock();
+    try {
+      delete(data);
+      add(data);
+    } finally {
+      writeLock.unlock();
+    }
   }
 
   @Override
-  public synchronized void update(T data) {
-    delete(data);
-    add(data);
+  public final void update(T data) {
+    Objects.requireNonNull(data);
+    update(Lists.newArrayList(data));
   }
 
   @Override
-  public synchronized void delete(List<T> dataList) {
+  public final void delete(List<T> dataList) {
     Objects.requireNonNull(dataList);
-    List<ID> ids = dataList.stream()
-        .map(data -> idFunction.apply(data))
-        .collect(Collectors.toList());
-    elements.removeIf(e -> ids.contains(idFunction.apply(e)));
+    Lock writeLock = lock.writeLock();
+    try {
+      List<ID> ids = dataList.stream()
+          .map(data -> idFunction.apply(data))
+          .collect(Collectors.toList());
+      elements.removeIf(e -> ids.contains(idFunction.apply(e)));
+    } finally {
+      writeLock.unlock();
+    }
   }
 
   @Override
-  public synchronized void delete(T data) {
+  public final void delete(T data) {
     Objects.requireNonNull(data);
-    elements.removeIf(e -> idFunction.apply(data).equals(idFunction.apply(e)));
+    delete(Lists.newArrayList(data));
   }
 
   @Override
-  public List<T> elements() {
-    return new ArrayList<>(elements);
+  public final List<T> elements() {
+    Lock readLock = lock.writeLock();
+    try {
+      readLock.lock();
+      return new ArrayList<>(elements);
+    } finally {
+      readLock.unlock();
+    }
   }
 
   @Override
-  public T get(ID id) {
-    return elements.stream().filter(e -> idFunction.apply(e).equals(id))
-        .findFirst().orElse(null);
+  public final T get(ID id) {
+    Lock readLock = lock.writeLock();
+    try {
+      readLock.lock();
+      return elements.stream().filter(e -> idFunction.apply(e).equals(id))
+          .findFirst().orElse(null);
+    } finally {
+      readLock.unlock();
+    }
   }
 
   @Override
-  public void clear() {
-    this.elements.clear();
+  public final void clear() {
+    Lock writeLock = lock.writeLock();
+    try {
+      this.elements.clear();
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  @Override
+  public final void reload(List<T> data) {
+    Lock writeLock = lock.writeLock();
+    try {
+      elements.clear();
+      elements.addAll(data);
+    } finally {
+      writeLock.unlock();
+    }
   }
 }

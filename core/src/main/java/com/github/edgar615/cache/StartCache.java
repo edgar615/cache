@@ -110,4 +110,10 @@ public interface StartCache<ID, T> {
    * @return 转换后的对象
    */
   T transform(Map<String, Object> source);
+
+  /**
+   * 全量替换data中的数据
+   * @param data
+   */
+  void reload(List<T> data);
 }

@@ -19,7 +19,7 @@ package com.github.edgar615.cache;
  * @param <ID> 主键
  * @param <T> data
  */
-public interface StartCacheReloadAction<ID, T> {
+public interface StartCacheReloader<ID, T> {
 
   void execute();
 }

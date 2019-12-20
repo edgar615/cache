@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
  * @param <ID> 主键
  * @param <T> 数据
  */
-public abstract class AbstractStartCacheReloadAction<ID, T> implements
-    StartCacheReloadAction<ID, T> {
+public abstract class AbstractStartCacheReloader<ID, T> implements
+    StartCacheReloader<ID, T> {
 
   private final StartCache<ID, T> startCache;
 
   private final Function<T, ID> idFunction;
 
-  protected AbstractStartCacheReloadAction(
+  protected AbstractStartCacheReloader(
       StartCache<ID, T> startCache, Function<T, ID> idFunction) {
     this.startCache = startCache;
     this.idFunction = idFunction;
