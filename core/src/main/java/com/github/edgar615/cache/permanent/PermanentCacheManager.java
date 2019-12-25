@@ -12,23 +12,24 @@
  * limitations under the License.
  */
 
-package com.github.edgar615.cache;
+package com.github.edgar615.cache.permanent;
 
 import java.util.Collection;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * StartCache的管理器实现.
+ * PermanentCache的管理器实现.
  *
  * @author Edgar  Date 2018/5/22
  */
-public interface StartCacheManager {
+public interface PermanentCacheManager {
 
   /**
    * 根据cache名称返回cache
    * @param name cache名称
    * @return cache
    */
-  StartCache getCache(String name);
+  PermanentCache getCache(String name);
 
   /**
    * 返回所有的cache列表
@@ -37,11 +38,21 @@ public interface StartCacheManager {
   Collection<String> getCacheNames();
 
   /**
-   * 启动StartCache，从数据源拉取数据到内存
+   * 启动PermanentCache，从数据源拉取数据到内存
    */
   void start();
 
-  static StartCacheManager create(Collection<? extends StartCache> caches) {
-    return new StartCacheManagerImpl(caches);
+  /**
+   * 关闭PermanentCache，关闭定时器
+   */
+  void shutdown();
+
+  static PermanentCacheManager create(Collection<? extends PermanentCache> caches) {
+    return new PermanentCacheManagerImpl(caches);
+  }
+
+  static PermanentCacheManager create(Collection<? extends PermanentCache> caches,
+      ScheduledExecutorService scheduledExecutorService) {
+    return new PermanentCacheManagerImpl(caches, scheduledExecutorService);
   }
 }

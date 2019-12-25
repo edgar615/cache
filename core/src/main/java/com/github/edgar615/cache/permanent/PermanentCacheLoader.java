@@ -12,14 +12,16 @@
  * limitations under the License.
  */
 
-package com.github.edgar615.cache;
+package com.github.edgar615.cache.permanent;
+
+import java.util.List;
 
 /**
- * 将StartCache全部重新加载的action
- * @param <ID> 主键
+ * 将PermanentCache全部重新加载的loader
+ *
  * @param <T> data
  */
-public interface StartCacheReloader<ID, T> {
+public interface PermanentCacheLoader<T> {
 
-  void execute();
+  List<T> load();
 }

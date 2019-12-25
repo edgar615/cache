@@ -12,9 +12,8 @@
  * limitations under the License.
  */
 
-package com.github.edgar615.cache;
+package com.github.edgar615.cache.permanent;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,86 +22,43 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by Edgar on 2018/5/18.
  *
  * @author Edgar  Date 2018/5/18
  */
-public abstract class AbstractStartCache<ID, T> implements StartCache<ID, T> {
+class PermanentCacheImpl<ID, T> implements PermanentCache<ID, T> {
 
   private final List<T> elements = new CopyOnWriteArrayList<>();
 
+  private final String name;
+
   private final Function<T, ID> idFunction;
+
+  private final PermanentCacheLoader<T> loader;
+
+  private final RefreshPolicy refreshPolicy;
 
   private final ReadWriteLock lock;
 
-  protected AbstractStartCache(Function<T, ID> idFunction) {
+  PermanentCacheImpl(String name, Function<T, ID> idFunction,
+      PermanentCacheLoader<T> loader,
+      RefreshPolicy refreshPolicy) {
+    Objects.requireNonNull(name);
     Objects.requireNonNull(idFunction);
+    Objects.requireNonNull(loader);
+    Objects.requireNonNull(refreshPolicy);
+    this.name = name;
     this.idFunction = idFunction;
+    this.loader = loader;
+    this.refreshPolicy = refreshPolicy;
     this.lock = new ReentrantReadWriteLock();
   }
 
   @Override
-  public final void add(List<T> data) {
-    Objects.requireNonNull(data);
-    Lock writeLock = lock.writeLock();
-    try {
-      writeLock.lock();
-      elements.addAll(data);
-    } finally {
-      writeLock.unlock();
-    }
-  }
-
-  @Override
-  public final void add(T data) {
-    Objects.requireNonNull(data);
-    add(Lists.newArrayList(data));
-  }
-
-  @Override
-  public final void update(List<T> data) {
-    Objects.requireNonNull(data);
-    Lock writeLock = lock.writeLock();
-    try {
-      delete(data);
-      add(data);
-    } finally {
-      writeLock.unlock();
-    }
-  }
-
-  @Override
-  public final void update(T data) {
-    Objects.requireNonNull(data);
-    update(Lists.newArrayList(data));
-  }
-
-  @Override
-  public final void delete(List<T> dataList) {
-    Objects.requireNonNull(dataList);
-    Lock writeLock = lock.writeLock();
-    try {
-      List<ID> ids = dataList.stream()
-          .map(data -> idFunction.apply(data))
-          .collect(Collectors.toList());
-      elements.removeIf(e -> ids.contains(idFunction.apply(e)));
-    } finally {
-      writeLock.unlock();
-    }
-  }
-
-  @Override
-  public final void delete(T data) {
-    Objects.requireNonNull(data);
-    delete(Lists.newArrayList(data));
-  }
-
-  @Override
   public final List<T> elements() {
-    Lock readLock = lock.writeLock();
+    Lock readLock = lock.readLock();
     try {
       readLock.lock();
       return new ArrayList<>(elements);
@@ -113,7 +69,7 @@ public abstract class AbstractStartCache<ID, T> implements StartCache<ID, T> {
 
   @Override
   public final T get(ID id) {
-    Lock readLock = lock.writeLock();
+    Lock readLock = lock.readLock();
     try {
       readLock.lock();
       return elements.stream().filter(e -> idFunction.apply(e).equals(id))
@@ -121,6 +77,16 @@ public abstract class AbstractStartCache<ID, T> implements StartCache<ID, T> {
     } finally {
       readLock.unlock();
     }
+  }
+
+  @Override
+  public String name() {
+    return this.name;
+  }
+
+  @Override
+  public RefreshPolicy refreshPolicy() {
+    return refreshPolicy;
   }
 
   @Override
@@ -134,9 +100,11 @@ public abstract class AbstractStartCache<ID, T> implements StartCache<ID, T> {
   }
 
   @Override
-  public final void reload(List<T> data) {
+  public final void load() {
     Lock writeLock = lock.writeLock();
     try {
+      writeLock.lock();
+      List<T> data = loader.load();
       elements.clear();
       elements.addAll(data);
     } finally {
