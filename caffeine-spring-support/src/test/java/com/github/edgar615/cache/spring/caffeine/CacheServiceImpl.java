@@ -57,6 +57,7 @@ public class CacheServiceImpl implements CacheService {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+    System.out.println(id);
     System.out.println("cache3:concurrent");
     stat("getConcurrent");
     return UUID.randomUUID().toString();

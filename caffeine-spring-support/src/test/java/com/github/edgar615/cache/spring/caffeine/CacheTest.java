@@ -66,40 +66,40 @@ public class CacheTest {
     Assert.assertEquals(2, count);
   }
 
-//  @Test
-//  public void testConcurrent() throws InterruptedException {
-//    System.out.println(cacheService.getConcurrent(1));
-//    CountDownLatch countDownLatch = new CountDownLatch(10);
-//    for (int i = 0; i < 10; i ++) {
-//      new Thread(() -> {
-//        System.out.println(cacheService.getConcurrent(1));
-//        countDownLatch.countDown();
-//      }).start();
-//    }
-//    countDownLatch.await();
-//
-////    cacheService.getConcurrent(1);
-//    int count = cacheService.count("getConcurrent");
-//    Assert.assertEquals(1, count);
-//  }
-//
-//  @Test
-//  public void testConcurrent2() throws InterruptedException {
-//    long start = System.currentTimeMillis();
-//    CountDownLatch countDownLatch = new CountDownLatch(10);
-//    for (int i = 0; i < 10; i ++) {
-//      new Thread(() -> {
-//        System.out.println(cacheService.getConcurrent(1));
-//        countDownLatch.countDown();
-//      }).start();
-//    }
-//    countDownLatch.await();
-//    System.out.println(System.currentTimeMillis() - start);
-////    cacheService.getConcurrent(1);
-//    int count = cacheService.count("getConcurrent");
-//    Assert.assertEquals(1, count);
-//  }
-//
+  @Test
+  public void testConcurrent() throws InterruptedException {
+    System.out.println(cacheService.getConcurrent(1));
+    CountDownLatch countDownLatch = new CountDownLatch(10);
+    for (int i = 0; i < 10; i ++) {
+      new Thread(() -> {
+        System.out.println(cacheService.getConcurrent(1));
+        countDownLatch.countDown();
+      }).start();
+    }
+    countDownLatch.await();
+
+//    cacheService.getConcurrent(1);
+    int count = cacheService.count("getConcurrent");
+    Assert.assertEquals(1, count);
+  }
+
+  @Test
+  public void testConcurrent2() throws InterruptedException {
+    long start = System.currentTimeMillis();
+    CountDownLatch countDownLatch = new CountDownLatch(10);
+    for (int i = 0; i < 10; i ++) {
+      new Thread(() -> {
+        System.out.println(cacheService.getConcurrent(1));
+        countDownLatch.countDown();
+      }).start();
+    }
+    countDownLatch.await();
+    System.out.println(System.currentTimeMillis() - start);
+//    cacheService.getConcurrent(1);
+    int count = cacheService.count("getConcurrent");
+    Assert.assertEquals(1, count);
+  }
+
 //  @Test
 //  public void testConcurrent3() throws InterruptedException {
 //    AtomicInteger count = new AtomicInteger();

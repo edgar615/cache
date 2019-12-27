@@ -157,18 +157,20 @@ public class CacheTest {
     Assert.assertEquals(5, count);
   }
 
-//  @Test
-//  public void testConcurrent() throws InterruptedException {
-//    CountDownLatch countDownLatch = new CountDownLatch(10);
-//    for (int i = 0; i < 10; i ++) {
-//      new Thread(() -> {
-//        cacheService.getConcurrent(1);
-//        countDownLatch.countDown();
-//      }).start();
-//    }
-//    countDownLatch.await();
-//    cacheService.getConcurrent(1);
-//    int count = cacheService.count("getConcurrent");
-//    Assert.assertEquals(1, count);
-//  }
+  @Test
+  public void testConcurrent() throws InterruptedException {
+    long start = System.currentTimeMillis();
+    CountDownLatch countDownLatch = new CountDownLatch(10);
+    for (int i = 0; i < 30; i ++) {
+      new Thread(() -> {
+        cacheService.getConcurrent(1);
+        countDownLatch.countDown();
+      }).start();
+    }
+    countDownLatch.await();
+    System.out.println(System.currentTimeMillis() - start);
+    cacheService.getConcurrent(1);
+    int count = cacheService.count("getConcurrent");
+    Assert.assertEquals(1, count);
+  }
 }

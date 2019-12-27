@@ -62,6 +62,12 @@ public class CacheAutoConfiguration {
     return new CacheEvictEventListener(cacheManager);
   }
 
+  @Bean
+  @ConditionalOnMissingBean(CacheableExtensionAspet.class)
+  public CacheableExtensionAspet distributedLockAspect(ApplicationContext applicationContext) {
+    return new CacheableExtensionAspet(applicationContext);
+  }
+
   private Cache findByName(Collection<CacheManager> cacheManagers, String name) {
     return cacheManagers.stream()
         .map(cacheManager -> cacheManager.getCache(name))
