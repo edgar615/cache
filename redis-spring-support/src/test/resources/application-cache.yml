@@ -1,0 +1,18 @@
+cache:
+  provider: redis
+  caffeine:
+    spec:
+        caffeineCache1: maximumSize=50,expireAfterWrite=5s
+        caffeineCache2: maximumSize=5000,expireAfterWrite=10s
+  redis:
+    spec:
+        redisCache1:
+            time-to-live: 5000
+            cache-null-values: true
+            use-key-prefix: true
+            key-prefix: "redisCache1:"
+        redisCache2:
+            time-to-live: 10000
+            cache-null-values: true
+            use-key-prefix: true
+            key-prefix: "redisCache2:"

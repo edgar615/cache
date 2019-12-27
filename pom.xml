@@ -7,9 +7,13 @@
   <groupId>com.github.edgar615</groupId>
   <artifactId>cache</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <modules>
     <module>core</module>
+    <module>spring-support</module>
+    <module>redis-spring-support</module>
+    <module>caffeine-spring-support</module>
+    <module>permanent</module>
   </modules>
 
   <properties>
@@ -17,12 +21,13 @@
     <java.encoding>UTF-8</java.encoding>
     <project.build.sourceEncoding>${java.encoding}</project.build.sourceEncoding>
     <org.slf4j.version>1.7.24</org.slf4j.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.12</junit.version>
     <assertj.core.version>3.6.2</assertj.core.version>
     <awaitility.version>2.0.0</awaitility.version>
     <guava.version>26.0-jre</guava.version>
-    <javax.cache.version>1.1.1</javax.cache.version>
-    <cache.release.version>0.0.1</cache.release.version>
+    <caffeine.version>2.6.2</caffeine.version>
+    <spring.boot.version>2.0.1.RELEASE</spring.boot.version>
+    <cache.release.version>0.0.2</cache.release.version>
   </properties>
 
   <dependencies>
@@ -155,6 +160,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.5</version>
       </plugin>
     </plugins>
   </build>

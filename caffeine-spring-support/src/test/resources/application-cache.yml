@@ -1,0 +1,8 @@
+cache:
+  provider: caffeine
+  caffeine:
+    spec:
+        caffeineCache1: maximumSize=50,expireAfterWrite=5s
+        caffeineCache2: maximumSize=5000,expireAfterWrite=10s
+        caffeineCache3: maximumSize=5000,expireAfterWrite=10s
+
