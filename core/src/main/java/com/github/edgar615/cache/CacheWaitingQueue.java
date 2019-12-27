@@ -11,8 +11,9 @@ import java.util.function.Function;
 /**
  * 同一个key一次只放一个去查询，其他等待
  *
-// * 尝试用ConcurrentMap<K, CompletableFuture<V>>.compute/computeIfAbsent方法都不理想，在并发环境下依然会执行
+ * 尝试用ConcurrentMap<K, CompletableFuture<V>>.compute/computeIfAbsent方法都不理想，在并发环境下依然会执行
  */
+@Deprecated
 public class CacheWaitingQueue<K, V> {
 
   private final ConcurrentMap<K, CompletableFuture<V>> waitingQueue;
