@@ -64,6 +64,7 @@ public class CacheAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(CacheableExtensionAspet.class)
+  @ConditionalOnProperty(name = "cache.lock-same-key", havingValue = "true")
   public CacheableExtensionAspet distributedLockAspect(ApplicationContext applicationContext) {
     return new CacheableExtensionAspet(applicationContext);
   }

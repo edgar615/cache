@@ -1,5 +1,7 @@
 cache:
   provider: caffeine,redis
+  lock-same-key: true
+  aut-refresh: true
   caffeine:
     spec:
         caffeineCache1: maximumSize=50,expireAfterWrite=5s

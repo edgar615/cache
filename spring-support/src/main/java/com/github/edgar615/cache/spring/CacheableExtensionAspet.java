@@ -32,7 +32,7 @@ public class CacheableExtensionAspet {
 
   private final KeyGenerator keyGenerator = new SimpleKeyGenerator();
 
-  private final ConcurrentMap<String, WeakHashMap<Object, CompletableFuture<Object>>> localLock = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, CacheWaitingQueue> localLock = new ConcurrentHashMap<>();
 
   private final BeanFactory beanFactory;
 
@@ -40,13 +40,15 @@ public class CacheableExtensionAspet {
     this.beanFactory = beanFactory;
   }
 
-  private synchronized CompletableFuture<Object> putFuture(String cacheName, Object key, CompletableFuture<Object> future) {
-    localLock.putIfAbsent(cacheName, new WeakHashMap<>());
-    return localLock.get(cacheName).putIfAbsent(key, future);
+  private CompletableFuture<Object> putFuture(String cacheName, Object key,
+      CompletableFuture<Object> future) {
+    localLock.putIfAbsent(cacheName, new CacheWaitingQueue());
+    return localLock.get(cacheName).putFuture(key, future);
   }
 
-  private synchronized void removeFuture(String cacheName, Object key, CompletableFuture<Object> future) {
-    localLock.get(cacheName).remove(key, future);
+  private void removeFuture(String cacheName, Object key,
+      CompletableFuture<Object> future) {
+    localLock.get(cacheName).removeFuture(key, future);
   }
 
   @Around("@annotation(org.springframework.cache.annotation.Cacheable) && @annotation(cacheable)")
@@ -56,16 +58,19 @@ public class CacheableExtensionAspet {
     if (!Strings.isNullOrEmpty(cacheable.keyGenerator())) {
       localKeyGenerator = beanFactory.getBean(cacheable.keyGenerator(), KeyGenerator.class);
     }
-    // 先只取一个做测试
+    // 目前只取了一个
     String cacheName = cacheable.cacheNames()[0];
     Method method = getSpecificmethod(pjp);
     Object key = localKeyGenerator.generate(pjp.getTarget(), method, pjp.getArgs());
+    return executeCacheableMethod(pjp, cacheName, key);
+  }
 
+  private Object executeCacheableMethod(ProceedingJoinPoint pjp, String cacheName, Object key)
+      throws Throwable {
     CompletableFuture<Object> completableFuture = new CompletableFuture<>();
     CompletableFuture<Object> future = putFuture(cacheName, key, completableFuture);
     if (future == null) {
       try {
-        System.out.println(future);
         Object result = pjp.proceed();
         completableFuture.complete(result);
         return result;
